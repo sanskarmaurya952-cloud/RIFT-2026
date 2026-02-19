@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Muling Detection</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<!-- ══════════ TOPBAR ══════════ -->
+<header class="topbar">
+  <div class="topbar-logo">
+    <div class="logo-hex">R</div>
+    <div>
+      <div class="logo-name">ALPHA</div>
+      <div class="logo-version">++</div>
+    </div>
+  </div>
+  <div class="topbar-sep"></div>
+  <nav class="topbar-tabs">
+    <div class="ttab on">Graph Analysis</div>
+    <div class="ttab">Risk Matrix</div>
+    <div class="ttab">Audit Log</div>
+  </nav>
+  <div class="topbar-right" id="topbar-right">
+    <div class="sys-status">
+      <div class="sys-dot"></div>
+      <span>All Systems Nominal</span>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════ UPLOAD ══════════ -->
+<div id="upload-screen">
+  <div class="upload-container">
+    <div class="u-eyebrow">
+      <div class="u-eyebrow-line l"></div>
+      <div class="u-eyebrow-text">Financial Crime Intelligence · Graph Detection Engine</div>
+      <div class="u-eyebrow-line r"></div>
+    </div>
+    <h1 class="u-headline">Detect <em>money muling</em><br>networks in seconds</h1>
+    <p class="u-sub">Upload transaction data to identify circular fund routing, smurfing patterns, and layered shell networks through enterprise-grade graph analysis.</p>
+
+    <div class="drop-card" id="drop-zone">
+      <div class="drop-icon-wrap">📂</div>
+      <div class="drop-title">Drop transaction CSV here</div>
+      <div class="drop-sub">Up to 10,000 transactions · Automatic schema detection</div>
+      <div class="btn-row">
+        <button class="btn-gold" onclick="document.getElementById('file-input').click()">
+          ↑ &nbsp;Select CSV File
+        </button>
+        <button class="btn-outline" onclick="loadDemo()">▷ &nbsp;Load Demo Dataset</button>
+      </div>
+      <input type="file" id="file-input" accept=".csv" onchange="handleFile(this.files[0])">
+    </div>
+
+    <div class="schema-box">
+      <div class="schema-head">
+        <span class="schema-head-label">Required CSV Schema</span>
+      </div>
+      <div class="schema-cols">
+        <div class="sc"><div class="sc-name">transaction_id</div><div class="sc-type">String · unique key</div></div>
+        <div class="sc"><div class="sc-name">sender_id</div><div class="sc-type">String · source account</div></div>
+        <div class="sc"><div class="sc-name">receiver_id</div><div class="sc-type">String · destination</div></div>
+        <div class="sc"><div class="sc-name">amount</div><div class="sc-type">Float · currency units</div></div>
+        <div class="sc"><div class="sc-name">timestamp</div><div class="sc-type">YYYY-MM-DD HH:MM:SS</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PROCESSING ══════════ -->
+<div id="processing-screen">
+  <div class="proc-orbital">
+    <svg viewBox="0 0 64 64">
+      <circle class="orb-track" cx="32" cy="32" r="28"/>
+      <circle class="orb-arc"   cx="32" cy="32" r="28"/>
+    </svg>
+  </div>
+  <div class="proc-heading">Analysing transaction network</div>
+  <div class="proc-progress-track">
+    <div class="proc-progress-fill" id="pbar"></div>
+  </div>
+  <div class="proc-log" id="plog"></div>
+</div>
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<div id="dashboard">
+
+  <!-- KPI Row -->
+  <div class="kpi-row">
+    <div class="kpi red"> <div class="kpi-num" id="k-rings">—</div><div class="kpi-lbl">Fraud Rings</div></div>
+    <div class="kpi amber"><div class="kpi-num" id="k-susp">—</div><div class="kpi-lbl">Suspicious Accts</div></div>
+    <div class="kpi gold"> <div class="kpi-num" id="k-accts">—</div><div class="kpi-lbl">Total Accounts</div></div>
+    <div class="kpi blue"> <div class="kpi-num" id="k-txns">—</div><div class="kpi-lbl">Transactions</div></div>
+    <div class="kpi violet"><div class="kpi-num" id="k-cyc">—</div><div class="kpi-lbl">Cycles Found</div></div>
+    <div class="kpi emerald"><div class="kpi-num" id="k-time">—</div><div class="kpi-lbl">Analysis Time</div></div>
+  </div>
+
+  <div class="dash-body">
+    <!-- Graph -->
+    <div class="graph-panel">
+      <div class="graph-controls">
+        <div class="gc-left">
+          <div class="seg">
+            <button class="seg-item on" id="sf-all"  onclick="filterGraph('all')">All Nodes</button>
+            <button class="seg-item"    id="sf-susp" onclick="filterGraph('suspicious')">Suspicious</button>
+            <button class="seg-item"    id="sf-ring" onclick="filterGraph('rings')">Rings Only</button>
+          </div>
+        </div>
+        <div class="gc-right">
+          <button class="ctrl-btn" onclick="resetView()">⊹ Fit View</button>
+          <button class="ctrl-btn danger-btn" onclick="resetApp()">↩ New Upload</button>
+        </div>
+      </div>
+      <svg id="graph-canvas"></svg>
+      <div id="node-tip"></div>
+      <div class="g-legend" id="g-legend"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sb-tabs">
+        <div class="sb-tab on"  onclick="setTab(0)">Rings</div>
+        <div class="sb-tab"     onclick="setTab(1)">Accounts</div>
+        <div class="sb-tab"     onclick="setTab(2)">Summary</div>
+      </div>
+      <div class="sb-body">
+        <div class="sb-pane on" id="pane-rings"></div>
+        <div class="sb-pane"    id="pane-accounts"></div>
+        <div class="sb-pane"    id="pane-summary"></div>
+      </div>
+
+      <!-- Download Panel -->
+      <div class="dl-panel">
+        <div class="dl-panel-title">Export Report</div>
+        <div class="dl-options">
+          <button class="dl-option primary-dl" onclick="downloadJSON()">
+            <div class="dl-icon gold-ic">📋</div>
+            <div class="dl-text">
+              <div class="dl-name">Full JSON Report</div>
+              <div class="dl-desc">Rings · accounts · scores · summary</div>
+            </div>
+            <span class="dl-arrow">↓</span>
+          </button>
+          <button class="dl-option" onclick="downloadCSVReport()">
+            <div class="dl-icon blue-ic">📊</div>
+            <div class="dl-text">
+              <div class="dl-name">Suspicious Accounts CSV</div>
+              <div class="dl-desc">Spreadsheet-ready account list</div>
+            </div>
+            <span class="dl-arrow">↓</span>
+          </button>
+          <button class="dl-option" onclick="downloadRingsCSV()">
+            <div class="dl-icon slate-ic">🔗</div>
+            <div class="dl-text">
+              <div class="dl-name">Fraud Rings CSV</div>
+              <div class="dl-desc">Ring membership & risk scores</div>
+            </div>
+            <span class="dl-arrow">↓</span>
+          </button>
+        </div>
+        <div class="dl-footer-btns">
+          <button class="btn-sm" onclick="resetApp()">↩ New File</button>
+          <button class="btn-sm" onclick="copyJSONToClipboard()">⧉ Copy JSON</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div id="toast" style="position:fixed;bottom:24px;right:24px;z-index:9999;
+  background:var(--s2);border:1px solid var(--bd3);border-radius:8px;
+  padding:11px 18px;font-size:.75rem;color:var(--t1);
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+  display:none;align-items:center;gap:9px;
+  animation:fadeUp .3s var(--ease) both;"></div>
+</body>
+</html>
