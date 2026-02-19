@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FRAUD SENTINEL</title>
+<title>SENTINEL — Financial Forensics Engine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
@@ -42,7 +42,7 @@
         </svg>
       </div>
       <div class="logo-text">
-        <span class="logo-name">FRAUD SENTINEL</span>
+        <span class="logo-name">SENTINEL</span>
         <span class="logo-sub">Financial Forensics Engine v2.0</span>
       </div>
     </a>
@@ -302,6 +302,356 @@
     </div>
 
   </div><!-- /results -->
+
+  <!-- ══════════════════════════════════════════════
+       ANALYTICS TAB PAGE
+  ══════════════════════════════════════════════ -->
+  <div class="tab-page" id="tabAnalytics">
+    <div class="tp-section">ANALYTICS</div>
+    <div class="tp-title">THREAT ANALYTICS</div>
+    <div class="tp-sub" id="anlSub">Run an analysis first — or load demo data — to populate the analytics dashboard.</div>
+
+    <!-- KPI Row -->
+    <div class="anl-kpi-row">
+      <div class="anl-kpi" style="--kpi-color:var(--red)">
+        <div class="anl-kpi-val" id="aklRiskRate">—</div>
+        <div class="anl-kpi-lbl">Fraud Rate</div>
+        <div class="anl-kpi-delta delta-up" id="aklRiskDelta">Awaiting data</div>
+      </div>
+      <div class="anl-kpi" style="--kpi-color:var(--amber)">
+        <div class="anl-kpi-val" id="aklAvgScore">—</div>
+        <div class="anl-kpi-lbl">Avg Risk Score</div>
+        <div class="anl-kpi-delta" id="aklScoreDelta">Awaiting data</div>
+      </div>
+      <div class="anl-kpi" style="--kpi-color:var(--cyan)">
+        <div class="anl-kpi-val" id="aklTotalVol">—</div>
+        <div class="anl-kpi-lbl">Flagged Volume $</div>
+        <div class="anl-kpi-delta" id="aklVolDelta">Awaiting data</div>
+      </div>
+      <div class="anl-kpi" style="--kpi-color:var(--green)">
+        <div class="anl-kpi-val" id="aklPrecision">—</div>
+        <div class="anl-kpi-lbl">Detection Precision</div>
+        <div class="anl-kpi-delta delta-ok" id="aklPreDelta">Awaiting data</div>
+      </div>
+    </div>
+
+    <!-- Row 2: Pattern breakdown + Score histogram -->
+    <div class="anl-grid-2">
+      <!-- Pattern Breakdown -->
+      <div class="anl-panel">
+        <div class="anl-panel-title">PATTERN BREAKDOWN <span class="anl-panel-badge" id="anlPatBadge">0 RINGS</span></div>
+        <div id="anlPatternBars" class="bar-chart">
+          <div class="empty-state"><div class="empty-icon">◎</div><div class="empty-text">No analysis data yet</div></div>
+        </div>
+      </div>
+      <!-- Score Histogram -->
+      <div class="anl-panel">
+        <div class="anl-panel-title">SUSPICION SCORE DISTRIBUTION <span class="anl-panel-badge" id="anlHistBadge">0 ACCOUNTS</span></div>
+        <div class="histogram" id="anlHistogram">
+          <!-- filled by JS -->
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;font-family:var(--font-mono);font-size:9px;color:var(--muted)">
+          <span>0</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Donut (ring type mix) + Top Accounts -->
+    <div class="anl-grid-2">
+      <!-- Ring Type Donut -->
+      <div class="anl-panel">
+        <div class="anl-panel-title">FRAUD RING TYPE MIX</div>
+        <div class="donut-wrap" id="anlDonutWrap">
+          <div class="empty-state" style="flex:1;border:none;padding:20px"><div class="empty-icon">◈</div><div class="empty-text">No rings detected yet</div></div>
+        </div>
+      </div>
+      <!-- Top Risky Accounts -->
+      <div class="anl-panel">
+        <div class="anl-panel-title">TOP RISK ACCOUNTS <span class="anl-panel-badge">TOP 8</span></div>
+        <div class="bar-chart" id="anlTopAccounts">
+          <div class="empty-state"><div class="empty-icon">⚠</div><div class="empty-text">No flagged accounts</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 4: Detection timeline + Velocity heatmap -->
+    <div class="anl-grid-2">
+      <!-- Detection event timeline -->
+      <div class="anl-panel">
+        <div class="anl-panel-title">DETECTION EVENT TIMELINE</div>
+        <div class="timeline" id="anlTimeline">
+          <div class="empty-state"><div class="empty-icon">⏱</div><div class="empty-text">Events appear after analysis</div></div>
+        </div>
+      </div>
+      <!-- Network stats -->
+      <div class="anl-panel">
+        <div class="anl-panel-title">NETWORK TOPOLOGY STATS</div>
+        <div class="bar-chart" id="anlNetStats">
+          <div class="empty-state"><div class="empty-icon">⦿</div><div class="empty-text">Graph metrics appear after analysis</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scatter canvas — score vs degree -->
+    <div class="anl-panel" style="margin-bottom:0">
+      <div class="anl-panel-title">RISK SCORE vs. TRANSACTION DEGREE — SCATTER PLOT <span class="anl-panel-badge" id="anlScatterBadge">AWAITING DATA</span></div>
+      <canvas id="scatterCanvas" width="1200" height="180"></canvas>
+      <div style="display:flex;gap:20px;margin-top:8px;font-family:var(--font-mono);font-size:9px;color:var(--muted)">
+        <span>● Suspicious (red = critical ≥70, amber = high ≥40, green = low)</span>
+        <span>● X-axis: total transaction connections</span>
+        <span>● Y-axis: suspicion score (0–100)</span>
+      </div>
+    </div>
+  </div><!-- /tabAnalytics -->
+
+
+  <!-- ══════════════════════════════════════════════
+       REPORTS TAB PAGE
+  ══════════════════════════════════════════════ -->
+  <div class="tab-page" id="tabReports">
+    <div class="tp-section">REPORTS</div>
+    <div class="tp-title">INTELLIGENCE REPORTS</div>
+    <div class="tp-sub">Generate, preview, and export structured intelligence reports from the current analysis session.</div>
+
+    <!-- Report type cards -->
+    <div class="report-card-grid">
+      <div class="report-card" onclick="generateReport('executive')">
+        <div class="report-card-badge">PDF READY</div>
+        <div class="report-card-icon">📋</div>
+        <div class="report-card-name">EXECUTIVE SUMMARY</div>
+        <div class="report-card-desc">High-level threat overview with KPIs, ring counts, and recommended actions for leadership.</div>
+      </div>
+      <div class="report-card" onclick="generateReport('technical')">
+        <div class="report-card-badge">JSON / CSV</div>
+        <div class="report-card-icon">🔬</div>
+        <div class="report-card-name">TECHNICAL INTELLIGENCE</div>
+        <div class="report-card-desc">Full account scoring, ring membership, pattern tags, confidence levels, and graph metrics.</div>
+      </div>
+      <div class="report-card" onclick="generateReport('sar')">
+        <div class="report-card-badge">SAR FORMAT</div>
+        <div class="report-card-icon">⚖️</div>
+        <div class="report-card-name">SAR / COMPLIANCE</div>
+        <div class="report-card-desc">Suspicious Activity Report draft pre-formatted for FinCEN / regulatory submission.</div>
+      </div>
+      <div class="report-card" onclick="generateReport('rings')">
+        <div class="report-card-badge">CSV</div>
+        <div class="report-card-icon">🔗</div>
+        <div class="report-card-name">RING MEMBERSHIP</div>
+        <div class="report-card-desc">Complete fraud ring members, pattern types, risk scores and transaction volumes per ring.</div>
+      </div>
+      <div class="report-card" onclick="generateReport('accounts')">
+        <div class="report-card-badge">CSV</div>
+        <div class="report-card-icon">👤</div>
+        <div class="report-card-name">ACCOUNT RISK REGISTER</div>
+        <div class="report-card-desc">All flagged accounts sorted by suspicion score with detected patterns and ring assignment.</div>
+      </div>
+      <div class="report-card" onclick="generateReport('network')">
+        <div class="report-card-badge">JSON</div>
+        <div class="report-card-icon">⦿</div>
+        <div class="report-card-name">GRAPH EXPORT (JSON)</div>
+        <div class="report-card-desc">Full node-link graph data in D3-compatible JSON format for external tools and visualization.</div>
+      </div>
+    </div>
+
+    <!-- Export row -->
+    <div class="export-row">
+      <button class="btn-export" onclick="exportJSON()"><span class="ico">⬇</span> FULL JSON REPORT</button>
+      <button class="btn-export" onclick="exportCSVAccounts()"><span class="ico">📊</span> ACCOUNTS CSV</button>
+      <button class="btn-export" onclick="exportCSVRings()"><span class="ico">🔗</span> RINGS CSV</button>
+      <button class="btn-export" onclick="exportCSVTransactions()"><span class="ico">💳</span> TRANSACTIONS CSV</button>
+      <button class="btn-export" onclick="copyReport()"><span class="ico">⧉</span> COPY SUMMARY</button>
+    </div>
+
+    <!-- Live report preview -->
+    <div class="rpt-preview" id="rptPreviewPanel">
+      <div class="rpt-preview-title" id="rptPreviewTitle">REPORT PREVIEW — SELECT A REPORT TYPE ABOVE</div>
+      <div id="rptPreviewBody">
+        <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Select a report card above to preview its contents.<br>Run an analysis first for live data.</div></div>
+      </div>
+    </div>
+  </div><!-- /tabReports -->
+
+
+  <!-- ══════════════════════════════════════════════
+       CONFIG TAB PAGE
+  ══════════════════════════════════════════════ -->
+  <div class="tab-page" id="tabConfig">
+    <div class="tp-section">CONFIGURATION</div>
+    <div class="tp-title">ENGINE CONFIGURATION</div>
+    <div class="tp-sub">Tune detection thresholds, scoring weights, graph rendering, and export settings. Changes apply on next analysis run.</div>
+
+    <div class="cfg-status-bar" id="cfgStatusBar">
+      ⬡ &nbsp;ENGINE READY — All systems nominal · v2.0.0 · Build 20240615
+    </div>
+
+    <div class="cfg-grid">
+      <!-- Detection thresholds -->
+      <div class="cfg-panel">
+        <div class="cfg-title">⚙ DETECTION THRESHOLDS</div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Min Cycle Length</div><div class="cfg-row-sub">Shortest circular path to flag (hops)</div></div>
+          <input class="cfg-input" id="cfgMinCycle" type="number" min="2" max="6" value="3">
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Max Cycle Depth</div><div class="cfg-row-sub">Deepest cycle to traverse (hops)</div></div>
+          <input class="cfg-input" id="cfgMaxCycle" type="number" min="3" max="10" value="5">
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Fan-in / Fan-out Min</div><div class="cfg-row-sub">Min connections to flag smurfing</div></div>
+          <input class="cfg-input" id="cfgFanMin" type="number" min="3" max="25" value="10">
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Shell Chain Max Tx</div><div class="cfg-row-sub">Max transactions for shell account</div></div>
+          <input class="cfg-input" id="cfgShellMax" type="number" min="2" max="10" value="4">
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Merchant Tx Threshold</div><div class="cfg-row-sub">Tx count above which node = merchant</div></div>
+          <input class="cfg-input" id="cfgMerchThresh" type="number" min="10" max="500" value="50">
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Velocity Window (hrs)</div><div class="cfg-row-sub">Temporal clustering detection window</div></div>
+          <input class="cfg-input" id="cfgVelocityWin" type="number" min="1" max="168" value="72">
+        </div>
+      </div>
+
+      <!-- Scoring weights -->
+      <div class="cfg-panel">
+        <div class="cfg-title">⚡ SCORING WEIGHTS</div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Cycle Pattern Score</div><div class="cfg-row-sub">Base suspicion added for cycle detection</div></div>
+          <input class="cfg-input" id="cfgScoreCycle" type="number" min="10" max="100" value="60">
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Fan Pattern Score</div><div class="cfg-row-sub">Base score for fan-in / fan-out</div></div>
+          <input class="cfg-input" id="cfgScoreFan" type="number" min="10" max="100" value="50">
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Shell Pattern Score</div><div class="cfg-row-sub">Base score for shell network chains</div></div>
+          <input class="cfg-input" id="cfgScoreShell" type="number" min="10" max="100" value="45">
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Velocity Bonus</div><div class="cfg-row-sub">Added score for high-velocity clustering</div></div>
+          <input class="cfg-input" id="cfgScoreVelocity" type="number" min="0" max="40" value="20">
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Degree Bonus</div><div class="cfg-row-sub">Added for high in/out degree accounts</div></div>
+          <input class="cfg-input" id="cfgScoreDegree" type="number" min="0" max="30" value="10">
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Ring Risk Bonus</div><div class="cfg-row-sub">Ring-level bonus on top of avg member score</div></div>
+          <input class="cfg-input" id="cfgScoreRingBonus" type="number" min="0" max="40" value="20">
+        </div>
+      </div>
+
+      <!-- Graph rendering -->
+      <div class="cfg-panel">
+        <div class="cfg-title">⦿ GRAPH RENDERING</div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Max Nodes Displayed</div><div class="cfg-row-sub">Cap before suspicious-priority sampling</div></div>
+          <input class="cfg-input" id="cfgMaxNodes" type="number" min="50" max="2000" value="300">
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Simulation Steps</div><div class="cfg-row-sub">Force-directed layout iterations</div></div>
+          <input class="cfg-input" id="cfgSimSteps" type="number" min="50" max="500" value="200">
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Show Node Labels</div><div class="cfg-row-sub">Labels when graph has ≤60 nodes</div></div>
+          <label class="cfg-toggle" onclick="toggleCfg(this)">
+            <input type="checkbox" id="cfgShowLabels" checked>
+            <div class="cfg-toggle-track"></div>
+            <div class="cfg-toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Animate Pulses</div><div class="cfg-row-sub">Animated rings on suspicious nodes</div></div>
+          <label class="cfg-toggle" onclick="toggleCfg(this)">
+            <input type="checkbox" id="cfgAnimPulse" checked>
+            <div class="cfg-toggle-track"></div>
+            <div class="cfg-toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Color Theme</div><div class="cfg-row-sub">Graph node color mode</div></div>
+          <select class="cfg-select" id="cfgColorMode">
+            <option value="ring">By Ring</option>
+            <option value="score">By Score</option>
+            <option value="pattern">By Pattern</option>
+          </select>
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Repulsion Force</div><div class="cfg-row-sub">Node separation force (higher = spread)</div></div>
+          <input class="cfg-input" id="cfgRepulse" type="number" min="500" max="10000" value="3000">
+        </div>
+      </div>
+
+      <!-- Export / UI settings -->
+      <div class="cfg-panel">
+        <div class="cfg-title">📋 EXPORT & DISPLAY</div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Auto-Download on Analysis</div><div class="cfg-row-sub">Saves JSON report automatically</div></div>
+          <label class="cfg-toggle" onclick="toggleCfg(this)">
+            <input type="checkbox" id="cfgAutoDownload">
+            <div class="cfg-toggle-track"></div>
+            <div class="cfg-toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Include Raw Transactions</div><div class="cfg-row-sub">Embed full tx list in JSON export</div></div>
+          <label class="cfg-toggle" onclick="toggleCfg(this)">
+            <input type="checkbox" id="cfgIncludeTx">
+            <div class="cfg-toggle-track"></div>
+            <div class="cfg-toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Particle Background</div><div class="cfg-row-sub">Animated network background canvas</div></div>
+          <label class="cfg-toggle" onclick="toggleCfg(this)">
+            <input type="checkbox" id="cfgParticles" checked>
+            <div class="cfg-toggle-track"></div>
+            <div class="cfg-toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Scanlines Overlay</div><div class="cfg-row-sub">CRT scanline aesthetic filter</div></div>
+          <label class="cfg-toggle" onclick="toggleCfg(this)">
+            <input type="checkbox" id="cfgScanlines" checked>
+            <div class="cfg-toggle-track"></div>
+            <div class="cfg-toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">UI Theme</div><div class="cfg-row-sub">Interface color palette</div></div>
+          <div class="theme-chips">
+            <div class="theme-chip active" onclick="setTheme('cyan',this)">CYAN</div>
+            <div class="theme-chip" onclick="setTheme('red',this)">RED</div>
+            <div class="theme-chip" onclick="setTheme('amber',this)">AMBER</div>
+            <div class="theme-chip" onclick="setTheme('green',this)">GREEN</div>
+          </div>
+        </div>
+        <div class="cfg-row">
+          <div><div class="cfg-row-label">Report Filename Prefix</div><div class="cfg-row-sub">Prefix for downloaded report files</div></div>
+          <input class="cfg-input" id="cfgFilePrefix" type="text" value="SENTINEL" style="width:120px;text-align:left">
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div style="display:flex;gap:12px;margin-bottom:28px">
+      <button class="cfg-save-btn" onclick="saveConfig()">SAVE CONFIG</button>
+      <button class="cfg-reset-btn" onclick="resetConfig()">RESET DEFAULTS</button>
+    </div>
+
+    <!-- Config activity log -->
+    <div class="anl-panel">
+      <div class="anl-panel-title">SYSTEM LOG <span class="anl-panel-badge" id="cfgLogBadge">0 ENTRIES</span></div>
+      <div class="cfg-log" id="cfgLog">
+        <span class="log-line-info">[BOOT] SENTINEL engine initialized — v2.0.0</span><br>
+        <span class="log-line-ok">[OK] All detection modules loaded</span><br>
+        <span class="log-line-ok">[OK] Graph engine ready</span><br>
+        <span class="log-line-info">[INFO] Awaiting analysis data...</span><br>
+      </div>
+    </div>
+  </div><!-- /tabConfig -->
 
   <!-- ══ FOOTER ══ -->
   <footer>
